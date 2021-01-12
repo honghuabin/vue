@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>vue框架基本使用</title>
+	<script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.9/vue.min.js"></script>
+	<script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.0/axios.min.js"></script>
+</head>
+<body>
+	<div id="app">
+		<div>
+			<button @click="showOrHide()">{{btnName}}</button>
+		</div>
+		<hr/>
+		<div>
+			<input type="text" id="aihao" name="aihao" v-model="hobby"/>
+			<button @click="addArr()">添加爱好</button>
+		</div>
+		<hr>
+		<h1>我今年{{age}}岁</h1>
+		<h1 v-text="msg"></h1>
+		<h1 v-html="html"></h1>
+		<h1 v-show="isShow">我可以显示和隐藏</h1>
+		<hr>
+		爱好
+		<ul>
+			<li v-for="item in arr">{{item}}</li>
+		</ul>
+		<hr>
+		性别：<h5 v-if="'男'==sex">男</h5>
+		<h5 v-else-if="'女'==sex">女</h5>
+		<h5 v-else>未知</h5>
+		<hr>
+		<p>
+			<textarea cols="30" rows="10" v-model="info"></textarea><span>{{info.length}}/140</span>
+		</p>
+		<p>
+			<button :disabled="info.length==0||info.length>140">发布</button>
+			<button @click="clear">清除</button>
+		</p>
+		<hr>
+		<p>
+			请输入想搜索的内容:
+			<input type="text" v-model="search">
+			<ul>
+				<li v-for="item in searchIndexArr">{{item}}</li>
+			</ul>
+		</p>
+		<hr>
+		<p>
+			ajax请求(使用axios)
+		</p>
+		<p>
+			{{ajaxDefaultContent}}
+			<button @click="ajaxGet">get请求</button>
+		</p>
+	</div>
+</body>
+</html>
+<script type="text/javascript">
+	var vm = new Vue({
+		// 挂载点(将Vue的实例)和结构层中标签进行联系
+		el:"#app",
+		// 实例数据来源
+		data:{
+			age: 18,
+			msg: "我今年18岁",	// 使用v-text进行标签
+			html: "<a href='www.baidu.com'>百度</a>",
+			btnName: "显示",
+			isShow: false,
+			arr: ['吃饭','睡觉'],
+			hobby:"",
+			sex: "男",
+			info:"",
+			search:"",
+			searchIndexArr: [],
+			ajaxDefaultContent: "默认文本",
+		},
+		// 元素绑定的事件编写的地方
+		methods:{
+			showOrHide(){
+				// vm.isShow = !vm.isShow;
+				// vm.btnName = vm.isShow ? "隐藏" : "显示";
+				// 上面方法也可以
+				this.isShow = !this.isShow;
+				this.btnName = this.isShow ? "隐藏" : "显示";	
+			},
+			addArr(){
+				this.arr.push(this.hobby);
+				this.hobby = '';
+			},
+			clear(){
+				this.info = '';
+			},
+			ajaxGet(){
+				// 必须放在域名里面使用
+				axios.get("http://horseapi.company.com/test").then(function(obj){
+				 	console.log(obj);
+				});
+			}
+		},
+		// 监听实例属性值变化
+		watch: {
+			// 这里是监听search属性，监听哪个属性就写哪个属性
+			search(newValue){
+				// 这里的url访问也必须放到域名里面使用
+				// newValue 这个参数就是search这个属性对应的最新的值
+				var path = "https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?wd=" + newValue + "&cb=a";
+
+				// JSONP跨域拉取数据
+				// 实现原理：
+				// 利用script标签src属性
+				// 利用函数声明 + 调用放在两个不同服务器上面
+
+				// 动态创建script
+				var script = document.createElement("script");
+				// 设置script标签的src属性值
+				script.src = path;
+				// 标签上将请求发出去
+				document.body.appendChild(script);
+			}
+		}
+	});
+
+	// 声明一个同名函数 a (这个a是跨域访问的链接里面定义的，我们这里请求的百度链接，它里面定义的是a => cb=a。这里cb是callback的简写，cb=a表示回调a函数)
+	function a(obj){
+		console.log(obj);
+		vm.searchIndexArr = obj.s;
+	}
+</script>
